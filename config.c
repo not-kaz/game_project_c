@@ -2,6 +2,7 @@
 #include "common.h"
 #include "log.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,13 +13,12 @@
 struct config_entry {
 	char *key;
 	int value;
+	bool modified;
+	struct config_entry *next;
 };
 
-/* TODO: Use a linked list or hash map instead of hard-coded array.
- *	 It would be more flexible and easier to modify later on. */
 struct config_entry config_map[MAX_CONFIG_ENTRIES];
 const char *config_filename = "options.cfg";
-/* NOTICE: Must be in the same order as the config enum in the header. */
 const char *config_keys[] = {
 	"resolution_x",
 	"resolution_y",
@@ -42,25 +42,32 @@ static void assign_defaults(void)
 
 static void parse_config_pair(char *str)
 {
-	char buf[MAX_LINE_LEN];
-	char *k, *v;
+	char *buf, *p;
+	char *key, *val;
 
-	/* OPTIMIZE: Find a better way to copy a string or avoid doing it.
-	 * This is safe but not the most performant, consider strdup()... */
-	snprintf(buf, sizeof(buf), "%s", str);
-	k = strtok(buf, "=");
-	v = strtok(NULL, "=");
-	if (!v) {
-		/* Possible formatting failure? No delimiter or too many. */
+	buf = str_duplicate(str);
+	if (!buf) {
+		return;
+	}
+	p = buf;
+	key = str_split(&p, "=");
+	if (!key) {
+		free(buf);
+		return;
+	}
+	val = str_split(&p, "=");
+	if (!val) {
+		free(buf);
 		return;
 	}
 	for (int i = 0; i < ARRAY_SIZE(config_keys); i++) {
-		if (strncmp(k, config_keys[i], strlen(k)) == 0) {
-			LOG_INFO("key: %s=%s, value: %s=%d", k, config_keys[i],
-				v, config_map[i].value);
-			config_map[i].value = atoi(v);
+		if (strncmp(key, config_keys[i], strlen(key)) == 0) {
+			LOG_INFO("key: %s=%s, value: %s=%d", key, config_keys[i],
+				val, config_map[i].value);
+			config_map[i].value = atoi(val);
 		}
 	}
+	free(buf);
 }
 
 void config_load(void)
