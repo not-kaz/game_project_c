@@ -7,8 +7,9 @@ CF = -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes \
      -Wpointer-arith -Wcast-qual
 LF = -lSDL2 -lSDL2_image
 DF = -DDEBUG_MODE
-SC = main.c config.c
-OB = out
+SC = main.c common.c log.c config.c
+OB = prototype
 
 all: $(SC)
-	$(CC) -g -O0 $(CF) $(SC) $(LF) -o $(OB) $(DF)
+	#$(CC) -g -O0 $(CF) $(SC) $(LF) -o $(OB) $(DF)
+	$(CC) -g -O0 $(CF) $(SC) $(LF) $(DF)
