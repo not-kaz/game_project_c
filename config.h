@@ -1,13 +1,9 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-enum {
-	CONFIG_RES_X,
-	CONFIG_RES_Y,
-	CONFIG_VSYNC
-};
-
 void config_load(void);
 void config_save(void);
+void config_set_entry_value(char *name, int value);
+int config_get_entry_value(char *name);
 
 #endif
