@@ -10,7 +10,7 @@
 #define MAX_SAVED_ENTRIES 256
 
 /* TODO: Move to dynamic array or hash table. */
-struct {
+static struct {
 	char *name;
 	char *value;
 } saved_entries[MAX_SAVED_ENTRIES];
