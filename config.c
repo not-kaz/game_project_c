@@ -9,7 +9,7 @@
 
 #define MAX_SAVED_ENTRIES 256
 
-/* TODO: Moved to dynamic array or hash table. */
+/* TODO: Move to dynamic array or hash table. */
 struct {
 	char *name;
 	char *value;
@@ -20,8 +20,7 @@ static const char *config_filename = "config.cfg";
 
 static void parse_config_line(char *ln)
 {
-	/* OPTIMIZE: Function str_duplicate() force us to free pointer later.
-	 * Try to avoid even having config_free(). */
+	/* TODO: Find a way to avoid memory allocation w/ str_duplicate() */
 	char *name, *val;
 
 	name = str_split(&ln, "=");
@@ -86,8 +85,7 @@ void config_entry_register(struct config_entry *entry, char *name, int value)
 			int val;
 			char *end;
 
-			/* OPTIMIZE: Even if saved value and new value are the
-			 * same, we still assign them. */
+			/* OPTIMIZE: If values are the same, don't reassign. */
 			val = strtol(saved_entries[i].value, &end, 10);
 			if (*end != '\0') {
 				LOG_WARN("Input from config file was invalid.");
@@ -143,9 +141,8 @@ void config_save(void)
 		return;
 	}
 	for (curr = config_entries; curr; curr = curr->next) {
-		/* IMPROVE: Implement a check if the value was edited before
-		 * saving, preventing unnecessary writes.
-		 * Current setup overwrites the whole file each time. */
+		/* TODO: Find out if overwriting everything is faster than
+		 * parsing through and finding what to overwrite. */
 		fprintf(fp, "%s=%d\n", curr->name, curr->value);
 	}
 	LOG_INFO("Saved current settings to config file '%s'", config_filename);
@@ -155,13 +152,13 @@ void config_save(void)
 void config_free(void)
 {
 	for (int i = 0; i < MAX_SAVED_ENTRIES; i++) {
-		/* IMPROVE: We could reset all pointers to NULL to prevent UB.
-		 * In case somebody frees the config during lifetime and tries
-		 * to use it again for some reason? */
+		/* IMPROVE: Reset all pointers to NULL to prevent UB if somebody
+		 * for some reason accesses data after free(). */
 		if (!saved_entries[i].name || !saved_entries[i].value) {
 			break;
 		}
 		free(saved_entries[i].name);
 		free(saved_entries[i].value);
+		saved_entries[i].name = NULL;
 	}
 }
