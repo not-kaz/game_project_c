@@ -8,8 +8,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_SAVED_ENTRIES 256
-
 static struct hash_map *registry;
 static struct config_entry *entries;
 static const char *filename = "config.cfg";
@@ -26,7 +24,7 @@ static void parse_config_line(char *ln)
 	if (!val) {
 		return;
 	}
-	/* TODO: Move from atoi() to strtol(). Safer. */
+	/* IMPROVE: Move from atoi() to strtol(). Safer. */
 	hash_map_insert(registry, name, (void *)(intptr_t)(atoi(val)));
 }
 
@@ -67,9 +65,8 @@ void config_entry_register(struct config_entry *entry, char *name, int value)
 		LOG_INFO("Config entry '%s' already registered.", found->name);
 		return;
 	}
-	if ((val = (intptr_t)(hash_map_at(registry, name)))) {
-		value = val;
-	}
+	val = (intptr_t)(hash_map_at(registry, name));
+	value = val ? val : value;
 	entry->name = name;
 	entry->value = value;
 	entry->next = entries;
@@ -119,8 +116,7 @@ void config_save(void)
 		return;
 	}
 	for (curr = entries; curr; curr = curr->next) {
-		/* TODO: Find out if overwriting everything is faster than
-		 * parsing through and finding what to overwrite. */
+		/* OPTIMIZE: Overwrite only modified entries. */
 		fprintf(fp, "%s=%d\n", curr->name, curr->value);
 	}
 	LOG_INFO("Saved current settings to config file '%s'", filename);
