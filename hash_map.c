@@ -29,7 +29,7 @@ static uint64_t hash(char *key)
 
 	hash = FNV_OFFSET;
 	for (char *ch = key; *ch; ch++) {
-		hash ^= (uint8_t) (*ch);
+		hash ^= (uint8_t)(*ch);
 		hash *= FNV_PRIME;
 	}
 	return hash;
@@ -37,7 +37,7 @@ static uint64_t hash(char *key)
 
 static uint64_t calc_index(char *key, uint64_t capacity)
 {
-	return (uint64_t) (hash(key) & (capacity - 1));
+	return (uint64_t)(hash(key) & (capacity - 1));
 }
 
 static struct map_entry *create_map_set(uint64_t capacity)
@@ -66,8 +66,6 @@ static void set_map_entry(struct map_entry *set, uint64_t capacity, char *key,
 			set[index].value = value;
 			return;
 		}
-		LOG_INFO("COLLISION? set key: %s --- new key: %s",
-			set[index].key, key);
 		index++;
 		if (index >= capacity) {
 			index = 0;
@@ -91,8 +89,8 @@ static void expand_map_set(struct map_entry **set, uint64_t *capacity)
 		if ((*set)[i].key == NULL) {
 			continue;
 		}
-		set_map_entry(new_set, new_cap,
-			(*set)[i].key, (*set)[i].value);
+		set_map_entry(new_set, new_cap, (*set)[i].key,
+			(*set)[i].value);
 	}
 	free((*set));
 	(*set) = new_set;
