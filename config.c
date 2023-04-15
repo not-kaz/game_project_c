@@ -12,6 +12,18 @@ static struct hash_map *registry;
 static struct config_entry *entries;
 static const char *filename = "config.cfg";
 
+static struct config_entry *find_entry(struct config_entry *entry, char *name)
+{
+	struct config_entry *curr;
+
+	for (curr = entries; curr; curr = curr->next) {
+		if ((!strcmp(curr->name, name)) || (curr == entry)) {
+			return curr;
+		}
+	}
+	return NULL;
+}
+
 static void parse_config_line(char *ln)
 {
 	char *name, *val;
@@ -44,16 +56,19 @@ static void parse_config_text(char *str)
 	free(buf);
 }
 
-static struct config_entry *find_entry(struct config_entry *entry, char *name)
+static void reverse_entry_order(void)
 {
-	struct config_entry *curr;
+	struct config_entry *curr, *next, *prev;
 
-	for (curr = entries; curr; curr = curr->next) {
-		if ((!strcmp(curr->name, name)) || (curr == entry)) {
-			return curr;
-		}
+	curr = entries;
+	next = prev = NULL;
+	while (curr != NULL) {
+		next = curr->next;
+		curr->next = prev;
+		prev = curr;
+		curr = next;
 	}
-	return NULL;
+	entries = prev;
 }
 
 void config_entry_register(struct config_entry *entry, char *name, int value)
@@ -114,6 +129,9 @@ void config_save(void)
 		LOG_WARN("Failed at writing config file to disk.");
 		return;
 	}
+	/* HACK: This allows us to print out variables in the order they were
+	 * registered, but it is not very performant. Reconsider. */
+	reverse_entry_order();
 	for (curr = entries; curr; curr = curr->next) {
 		/* OPTIMIZE: Overwrite only modified entries. */
 		fprintf(fp, "%s=%d\n", curr->name, curr->value);
