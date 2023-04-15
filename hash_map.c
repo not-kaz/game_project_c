@@ -129,7 +129,7 @@ void hash_map_insert(struct hash_map *map, char *key, void *value)
 	if (!map || !key || !value) {
 		return;
 	}
-	if ((float) map->length / (float) map->capacity >= LOAD_FACTOR) {
+	if ((float)(map->length) / (float)(map->capacity) >= LOAD_FACTOR) {
 		expand_map_set(&map->set, &map->capacity);
 	}
 	key = str_duplicate(key);
