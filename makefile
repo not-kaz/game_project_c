@@ -7,7 +7,7 @@ CF = -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes \
      -Wpointer-arith -Wcast-qual
 LF = -lSDL2 -lSDL2_image
 DF = -DDEBUG_MODE
-SC = main.c common.c log.c config.c
+SC = main.c common.c log.c config.c hash_map.c
 OB = prototype
 
 all: $(SC)
