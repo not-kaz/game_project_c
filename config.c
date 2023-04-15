@@ -12,6 +12,8 @@ static struct hash_map *registry;
 static struct config_entry *entries;
 static const char *filename = "config.cfg";
 
+/* TODO: Move from int to int64_t in config entry struct! */
+
 static struct config_entry *find_entry(struct config_entry *entry, char *name)
 {
 	struct config_entry *curr;
@@ -26,7 +28,8 @@ static struct config_entry *find_entry(struct config_entry *entry, char *name)
 
 static void parse_config_line(char *ln)
 {
-	char *name, *val;
+	char *name, *val, *end;
+	int num;
 
 	name = str_split(&ln, "=");
 	if (!name) {
@@ -36,8 +39,12 @@ static void parse_config_line(char *ln)
 	if (!val) {
 		return;
 	}
-	/* IMPROVE: Move from atoi() to strtol(). Safer. */
-	hash_map_insert(registry, name, (void *)(intptr_t)(atoi(val)));
+	/* FIXME: Possible loss of data w/ this cast. Larger to smaller type. */
+	num = (int)(strtol(val, &end, 10));
+	if (*end != '\0') {
+		return;
+	}
+	hash_map_insert(registry, name, (void *)(intptr_t)(num));
 }
 
 static void parse_config_text(char *str)
@@ -82,7 +89,7 @@ void config_entry_register(struct config_entry *entry, char *name, int value)
 	}
 	restored = (int)(intptr_t)(hash_map_at(registry, name));
 	entry->name = name;
-	entry->value = restored ? restored : value;
+	entry->value = (restored >= 0) ? restored : value;
 	entry->next = entries;
 	entries = entry;
 }
@@ -136,7 +143,7 @@ void config_save(void)
 		/* OPTIMIZE: Overwrite only modified entries. */
 		fprintf(fp, "%s=%d\n", curr->name, curr->value);
 	}
-	LOG_INFO("Saved current settings to config file '%s'", filename);
+	/* LOG_INFO("Saved current settings to config file '%s'", filename); */
 	fclose(fp);
 }
 
