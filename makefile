@@ -11,5 +11,4 @@ SC = main.c common.c log.c config.c hash_map.c
 OB = prototype
 
 all: $(SC)
-	#$(CC) -g -O0 $(CF) $(SC) $(LF) -o $(OB) $(DF)
 	$(CC) -g -O0 $(CF) $(SC) $(LF) $(DF)
