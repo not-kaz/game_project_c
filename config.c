@@ -9,22 +9,7 @@
 #include <string.h>
 
 static struct hash_map *registry;
-static struct config_entry *entries;
 static const char *filename = "config.cfg";
-
-/* TODO: Move from int to int64_t in config entry struct! */
-
-static struct config_entry *find_entry(struct config_entry *entry, char *name)
-{
-	struct config_entry *curr;
-
-	for (curr = entries; curr; curr = curr->next) {
-		if ((!strcmp(curr->name, name)) || (curr == entry)) {
-			return curr;
-		}
-	}
-	return NULL;
-}
 
 static void parse_config_line(char *ln)
 {
@@ -63,35 +48,14 @@ static void parse_config_text(char *str)
 	free(buf);
 }
 
-static void reverse_entry_order(void)
+void config_register_entry(char *name, int value)
 {
-	struct config_entry *curr, *next, *prev;
-
-	curr = entries;
-	next = prev = NULL;
-	while (curr != NULL) {
-		next = curr->next;
-		curr->next = prev;
-		prev = curr;
-		curr = next;
-	}
-	entries = prev;
-}
-
-void config_entry_register(struct config_entry *entry, char *name, int value)
-{
-	struct config_entry *found;
 	int restored;
 
-	if ((found = find_entry(entry, name))) {
-		LOG_INFO("Config entry '%s' already registered.", found->name);
-		return;
-	}
 	restored = (int)(intptr_t)(hash_map_at(registry, name));
-	entry->name = name;
-	entry->value = (restored >= 0) ? restored : value;
-	entry->next = entries;
-	entries = entry;
+	value = (restored >= 0) ? restored : value;
+	hash_map_insert(registry, name, (void *)(intptr_t)(value));
+	LOG_INFO("Added entry: %s - %d", name, value);
 }
 
 void config_load(void)
@@ -130,20 +94,20 @@ void config_save(void)
 {
 	FILE *fp;
 	struct config_entry *curr;
+	struct hash_map_iter *iter;
+	char *key;
+	void *val;
 
 	fp = fopen(filename, "w");
 	if (!fp) {
 		LOG_WARN("Failed at writing config file to disk.");
 		return;
 	}
-	/* HACK: This allows us to print out variables in the order they were
-	 * registered, but it is not very performant. Reconsider. */
-	reverse_entry_order();
-	for (curr = entries; curr; curr = curr->next) {
-		/* OPTIMIZE: Overwrite only modified entries. */
-		fprintf(fp, "%s=%d\n", curr->name, curr->value);
+	iter = hash_map_iter_create(registry);
+	while (hash_map_iter_next(iter, &key, &val) >= 0) {
+		fprintf(fp, "%s=%d\n", key, (int)(intptr_t)(val));
 	}
-	/* LOG_INFO("Saved current settings to config file '%s'", filename); */
+	hash_map_iter_destroy(iter);
 	fclose(fp);
 }
 
