@@ -56,7 +56,7 @@ static struct map_entry *create_map_set(uint64_t capacity)
 }
 
 static void set_map_entry(struct map_entry *set, uint64_t capacity, char *key,
-	void *value)
+		void *value)
 {
 	uint64_t index;
 
