@@ -93,7 +93,6 @@ void config_load(void)
 void config_save(void)
 {
 	FILE *fp;
-	struct config_entry *curr;
 	struct hash_map_iter *iter;
 	char *key;
 	void *val;
