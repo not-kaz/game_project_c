@@ -5,10 +5,9 @@ CF = -Wall -Wextra -Wmissing-prototypes -Wstrict-prototypes \
      -Wshadow -Wdouble-promotion -Wconversion -Wformat \
      -Wformat-signedness -Wformat-extra-args \
      -Wpointer-arith -Wcast-qual
-LF = -lSDL2 -lSDL2_image
+LF = -lSDL2
 DF = -DDEBUG_MODE
-SC = main.c common.c log.c config.c hash_map.c
-OB = prototype
+SC = main.c common.c log.c 
 
 all: $(SC)
 	$(CC) -g -O0 $(CF) $(SC) $(LF) $(DF)
