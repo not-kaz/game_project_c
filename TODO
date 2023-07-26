@@ -1,0 +1,1 @@
+* Replace all 'exit(EXIT_SUCCESS)' calls with func that clears memory on exit.
